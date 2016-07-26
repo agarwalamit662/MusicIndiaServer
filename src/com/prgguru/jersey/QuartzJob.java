@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
@@ -41,21 +43,53 @@ import com.google.android.gcm.server.Sender;
 import com.google.android.gcm.server.Constants; 
 
 public class QuartzJob implements Job {
-        public void execute(JobExecutionContext context)
+    
+	public static int newbollywoodsongsadded = 0;
+	public static int newpunjabisongsadded = 0;
+	
+	public void execute(JobExecutionContext context)
                         throws JobExecutionException {
         		
+        	
+				
+        		
         		System.out.println(Calendar.getInstance().getTime().toString()+" Inserts and Updates Entering");
+        		int before = 0;
+        		int after = 0;
+        		try {
+					before = DBConnection.getMaxBollywoodSongs();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
         		
-        		boolean issent = trySendNotification();
-        		
-        		/*insertandUpdateThisYearMovies();
+        		insertandUpdateThisYearMovies();
         		//insertPreviousYearMovies();
+        		
+        		try {
+					after = DBConnection.getMaxBollywoodSongs();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+        		
+        		if(after > before){
+        			try {
+    					sendGcmToTopic();
+    				} catch (JSONException e) {
+    					// TODO Auto-generated catch block
+    					e.printStackTrace();
+    				}
+        		}
         		
         		insertPunjabiPopSongs();
         		insertIndiPopSongs();
         		
         		insertHindiLyricsNet();
-        		updateHindiLyricsNet();*/
+        		updateHindiLyricsNet();
+        		
+        		
+        		
         		/*try {
         			DBConnection.getInsertSongData();
         			//insertDataIntoFiles();
@@ -70,6 +104,56 @@ public class QuartzJob implements Job {
                 System.out.println(Calendar.getInstance().getTime().toString()+"Inserts and Updates Complete");
         }
         
+	public static void sendGcmToTopic() throws JSONException {
+        
+        try {
+            // Prepare JSON containing the GCM message content. What to send and where to send.
+            JSONObject jGcmData = new JSONObject();
+            String urlBollyWood = "NA";
+            try {
+				urlBollyWood = DBConnection.getMaxMovieNumberURL();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            
+            JSONObject jData = new JSONObject();
+            jData.put("message", "Latest Bollywood Movie Songs Available Now");
+            jData.put("title", "New Songs Out");
+            jData.put("urlBollyWood", urlBollyWood);
+            jData.put("tikerText", "Open the app to get the latest songs from Bollywood");
+            // Where to send GCM message.
+            jGcmData.put("to", "/topics/music_india");
+            
+            // What to send in GCM message.
+            jGcmData.put("data", jData);
+            String API_KEY = "AIzaSyB-7pw9ncZRnE-xIgr5vct_4bWp-IM6oMU";
+            // Create connection to send GCM Message request.
+            URL url = new URL("https://android.googleapis.com/gcm/send");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("Authorization", "key=" + API_KEY);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+
+            // Send GCM message content.
+            OutputStream outputStream = conn.getOutputStream();
+            outputStream.write(jGcmData.toString().getBytes());
+
+            // Read GCM response.
+            InputStream inputStream = conn.getInputStream();
+           // String resp = IOUtils.toString(inputStream);
+            //System.out.println(resp);
+            System.out.println("Check your device/emulator for notification or logcat for " +
+                    "confirmation of the receipt of the GCM message.");
+        } catch (IOException e) {
+            System.out.println("Unable to send GCM message.");
+            System.out.println("Please ensure that API_KEY has been replaced by the server " +
+                    "API key, and that the device's registration token is correct (if specified).");
+            e.printStackTrace();
+        }
+    }
+	
         public boolean trySendNotification(){
         	System.out.println("GCM trySendNotification ENTER");
             System.out.println("GCM trySendNotification ENTER");
@@ -2222,7 +2306,7 @@ public class QuartzJob implements Job {
             				href = href.replaceAll("\r", "");
             				href = "http://www.hindilyrics.net"+href;
             				//int mOVIENUMBER, String mOVIESTARTCHAR, String mOVIENAME,String uRLS,int ISLATEST
-            				MOVIELYRICS mlObject = new MOVIELYRICS(0,MOVIENAME.substring(0, 1),MOVIENAME,null,ISLATEST);
+            				MOVIELYRICS mlObject = new MOVIELYRICS(0,MOVIENAME.substring(0, 1),MOVIENAME,"NA",ISLATEST);
             				
             				response= Jsoup.connect(href)
                      	           .ignoreContentType(true)
@@ -2241,9 +2325,9 @@ public class QuartzJob implements Job {
                  				mlObject.setURLS(srcimage);
                  				break;
                  			}
-                 			if(mlObject.getURLS() == null){
+                 			/*if(mlObject.getURLS() == null){
                  				mlObject.setURLS("");
-                 			}
+                 			}*/
                  			
                  			int MOVIENUMBER = DBConnection.insertandUpdateMovieLyricsObject(0, String.valueOf(MOVIENAME.charAt(0)), MOVIENAME,mlObject.getURLS(),ISLATEST);
                  			mlObject.setMOVIENUMBER(MOVIENUMBER);

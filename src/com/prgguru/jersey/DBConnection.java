@@ -988,6 +988,131 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 		return wassavesuccess;
 	}
 	
+	public static int getMaxBollywoodSongs() throws SQLException{
+		
+		Connection dbConn = null;
+		int count = 0;
+		
+		try {
+			try {
+				dbConn = DBConnection.createConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			String qry = "SELECT COUNT(*) from moviesongs";
+			PreparedStatement psMOVIENUMBER = dbConn.prepareStatement(qry);
+			ResultSet rs = psMOVIENUMBER.executeQuery();
+			
+			while(rs.next()){
+				count = rs.getInt(1);
+			}
+			
+		} 
+		catch (SQLException sqle) {
+			throw sqle;
+			
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		
+		return count;
+		
+	}
+	
+	public static int getMaxPunjabiSongs() throws SQLException{
+		
+		Connection dbConn = null;
+		int count = 0;
+		
+		try {
+			try {
+				dbConn = DBConnection.createConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			String qry = "SELECT COUNT(*) from punjabisongs";
+			PreparedStatement psMOVIENUMBER = dbConn.prepareStatement(qry);
+			ResultSet rs = psMOVIENUMBER.executeQuery();
+			
+			while(rs.next()){
+				count = rs.getInt(1);
+			}
+			
+		} 
+		catch (SQLException sqle) {
+			throw sqle;
+			
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		
+		return count;
+		
+	}
+	
+	public static String getMaxMovieNumberURL() throws SQLException{
+		
+		String url = "NA";
+		Connection dbConn = null;
+		int count = 0;
+		
+		try {
+			try {
+				dbConn = DBConnection.createConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			String qry = "SELECT MOVIENUMBER,MOVIENAME,URLS FROM bollywoodmoviessongs having MOVIENUMBER = (Select MAX(MOVIENUMBER) from bollywoodmoviessongs)";
+			PreparedStatement psMOVIENUMBER = dbConn.prepareStatement(qry);
+			ResultSet rs = psMOVIENUMBER.executeQuery();
+			
+			while(rs.next()){
+				count = rs.getInt(1);
+				url = rs.getString(3);
+			}
+			
+		} 
+		catch (SQLException sqle) {
+			throw sqle;
+			
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		
+		return url;
+		
+	}
+	
 	
 	public static int insertandUpdateMovieLyricsObject(int movieNumber, 
 			String MOVIESTARTCHAR, 
