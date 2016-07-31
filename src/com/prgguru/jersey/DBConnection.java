@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -1083,7 +1085,7 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 				e.printStackTrace();
 			}
 			
-			String qry = "SELECT MOVIENUMBER,MOVIENAME,URLS FROM bollywoodmoviessongs having MOVIENUMBER = (Select MAX(MOVIENUMBER) from bollywoodmoviessongs)";
+			String qry = "SELECT MOVIENUMBER,MOVIENAME,URLS FROM bollywoodmoviessongs having MOVIENUMBER = (Select MOVIE_NUMBER from moviesongs where SONG_ID = (Select MAX(SONG_ID) from moviesongs))";
 			PreparedStatement psMOVIENUMBER = dbConn.prepareStatement(qry);
 			ResultSet rs = psMOVIENUMBER.executeQuery();
 			
@@ -1113,6 +1115,109 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 		
 	}
 	
+	public static Map getUpdateDetails(){
+		
+		Map updateMap = new HashMap();
+		
+		Connection dbConn = null;
+		
+		try {
+			try {
+				dbConn = DBConnection.createConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			String qry = "SELECT updatelink, indexoflink, version FROM updatemyapp WHERE indexoflink = 1";
+			PreparedStatement psMOVIENUMBER = dbConn.prepareStatement(qry);
+			
+			ResultSet rs = psMOVIENUMBER.executeQuery();
+			
+			while(rs.next()){
+				updateMap.put("updatelink", rs.getString(1));
+				updateMap.put("indexoflink", String.valueOf(rs.getInt(2)));
+				updateMap.put("version", String.valueOf(rs.getInt(3)));
+			}
+		}
+		catch(SQLException sqle){
+			
+		}
+		catch(Exception e){
+			
+		}
+		
+		
+		return updateMap;
+		
+	}
+	
+	public static String updateUpdateMyApp(String updatelink,String indexoflink,String version) throws SQLException{
+		String retValue = "Not Successfully Updated";
+		String retValueShare = "Not Successfully Updated";
+		boolean updatemyapp = false;
+		boolean sharemyapp = false;
+		Connection dbConn = null;
+		try {
+			try {
+				dbConn = DBConnection.createConnection();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Statement stmt = dbConn.createStatement();
+			String query = "UPDATE updatemyapp set updatelink = '"+updatelink+"' , version = '" +version+"' where indexoflink = 1" ;
+			
+			
+			int check = 0; 
+			check =	stmt.executeUpdate(query);
+			
+			if(check > 0) {
+				updatemyapp = true;
+				retValue = "SuccessFully Updated";
+			}
+			else{
+				retValue = "Not SuccessFully Updated";
+			}
+			
+			query = "UPDATE sharemyapp set url = '"+updatelink+"' where indexoflink = 1" ;
+			
+			check = 0; 
+			check =	stmt.executeUpdate(query);
+			
+			if(check > 0) {
+				sharemyapp = true;
+				retValueShare = "SuccessFully Updated";
+			}
+			else{
+				retValue = "Not SuccessFully Updated";
+			}
+			
+		} 
+		catch (SQLException sqle) {
+			throw sqle;
+			
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		System.out.println(Calendar.getInstance().getTime().toString()+"Exiting update updateUpdateMyApp Method");
+		
+		if(updatemyapp && sharemyapp){
+			return "Successfully Updated";
+		}
+		else{
+			return "Not Successfully Updated";
+		}
+		
+	}
 	
 	public static int insertandUpdateMovieLyricsObject(int movieNumber, 
 			String MOVIESTARTCHAR, 

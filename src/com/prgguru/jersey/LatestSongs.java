@@ -1,6 +1,11 @@
 
 package com.prgguru.jersey;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.SQLException;
 
 import javax.ws.rs.GET;
@@ -9,6 +14,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 //Path: http://localhost/<appln-folder-name>/latestsongs
 @Path("/songs")
@@ -51,6 +57,61 @@ public class LatestSongs {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	@GET
+	@Path("/update")
+	@Produces(MediaType.APPLICATION_JSON)
+	public void getUpdate() throws JSONException
+	{
+		String msg = "";
+		try {
+            // Prepare JSON containing the GCM message content. What to send and where to send.
+            JSONObject jGcmData = new JSONObject();
+            String urlBollyWood = "NA";
+            try {
+				urlBollyWood = DBConnection.getMaxMovieNumberURL();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            
+            JSONObject jData = new JSONObject();
+            jData.put("message", "Latest Bollywood Movie Songs Available Now");
+            jData.put("title", "New Songs Out");
+            jData.put("urlBollyWood", urlBollyWood);
+            jData.put("tikerText", "Open the app to get the latest songs from Bollywood");
+            // Where to send GCM message.
+            jGcmData.put("to", "/topics/music_india");
+            
+            // What to send in GCM message.
+            jGcmData.put("data", jData);
+            String API_KEY = "AIzaSyB-7pw9ncZRnE-xIgr5vct_4bWp-IM6oMU";
+            // Create connection to send GCM Message request.
+            URL url = new URL("https://android.googleapis.com/gcm/send");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("Authorization", "key=" + API_KEY);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+
+            // Send GCM message content.
+            OutputStream outputStream = conn.getOutputStream();
+            outputStream.write(jGcmData.toString().getBytes());
+
+            // Read GCM response.
+            InputStream inputStream = conn.getInputStream();
+           // String resp = IOUtils.toString(inputStream);
+            //System.out.println(resp);
+            System.out.println("Check your device/emulator for notification or logcat for " +
+                    "confirmation of the receipt of the GCM message.");
+        } catch (IOException e) {
+            System.out.println("Unable to send GCM message.");
+            System.out.println("Please ensure that API_KEY has been replaced by the server " +
+                    "API key, and that the device's registration token is correct (if specified).");
+            e.printStackTrace();
+        }
+		//return null;
 	}
 	
 	@GET
