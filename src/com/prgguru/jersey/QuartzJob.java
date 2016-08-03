@@ -63,6 +63,25 @@ public class QuartzJob implements Job {
 					e1.printStackTrace();
 				}
         		
+        		int beforePunjabi = 0;
+        		int afterPunjabi = 0;
+        		try {
+					beforePunjabi = DBConnection.getMaxPunjabiSongs();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+        		
+        		int beforePop = 0;
+        		int afterPop = 0;
+        		try {
+					beforePop = DBConnection.getMaxPopSongs();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+        		
+        		
         		insertandUpdateThisYearMovies();
         		//insertPreviousYearMovies();
         		
@@ -75,7 +94,7 @@ public class QuartzJob implements Job {
         		
         		if(after > before){
         			try {
-    					sendGcmToTopic();
+    					sendGcmToTopic("Latest Bollywood Songs Out","Bollywood");
     				} catch (JSONException e) {
     					// TODO Auto-generated catch block
     					e.printStackTrace();
@@ -83,7 +102,41 @@ public class QuartzJob implements Job {
         		}
         		
         		insertPunjabiPopSongs();
+        		
+        		try {
+					afterPunjabi = DBConnection.getMaxPunjabiSongs();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+        		
+        		if(afterPunjabi > beforePunjabi){
+        			try {
+    					sendGcmToTopic("Latest Punjabi Songs Out","Punjabi");
+    				} catch (JSONException e) {
+    					// TODO Auto-generated catch block
+    					e.printStackTrace();
+    				}
+        		}
+        		
         		insertIndiPopSongs();
+        		
+        		try {
+					afterPop = DBConnection.getMaxPopSongs();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+        		
+        		if(afterPop > beforePop){
+        			try {
+    					sendGcmToTopic("Latest Pop Songs Out","Pop");
+    				} catch (JSONException e) {
+    					// TODO Auto-generated catch block
+    					e.printStackTrace();
+    				}
+        		}
+        		
         		
         		insertHindiLyricsNet();
         		updateHindiLyricsNet();
@@ -104,24 +157,31 @@ public class QuartzJob implements Job {
                 System.out.println(Calendar.getInstance().getTime().toString()+"Inserts and Updates Complete");
         }
         
-	public static void sendGcmToTopic() throws JSONException {
+	public static void sendGcmToTopic(String message, String flag) throws JSONException {
         
         try {
             // Prepare JSON containing the GCM message content. What to send and where to send.
             JSONObject jGcmData = new JSONObject();
             String urlBollyWood = "NA";
+            
+            
             try {
-				urlBollyWood = DBConnection.getMaxMovieNumberURL();
+            	if(flag.equalsIgnoreCase("Bollywood"))
+            		urlBollyWood = DBConnection.getMaxMovieNumberURL();
+            	else if(flag.equalsIgnoreCase("Punjabi"))
+            		urlBollyWood = DBConnection.getMaxMovieNumberURLPunjabi();
+            	else if(flag.equalsIgnoreCase("Pop"))
+            		urlBollyWood = DBConnection.getMaxMovieNumberURLPop();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
             
             JSONObject jData = new JSONObject();
-            jData.put("message", "Latest Bollywood Movie Songs Available Now");
+            jData.put("message", message);
             jData.put("title", "New Songs Out");
             jData.put("urlBollyWood", urlBollyWood);
-            jData.put("tikerText", "Open the app to get the latest songs from Bollywood");
+            jData.put("tikerText", "Open the app to get the latest songs");
             // Where to send GCM message.
             jGcmData.put("to", "/topics/music_india");
             
@@ -2342,7 +2402,7 @@ public class QuartzJob implements Job {
                  				
                  				
                  				String href1 = e3.attr("href");
-                 				System.out.println("HREF1 is : "+href1);
+                 				//System.out.println("HREF1 is : "+href1);
                  				href1 = href1.replaceAll("\n", "");
                 				href1 = href1.replaceAll("\r", "");
                  				href1 = "http://www.hindilyrics.net"+href1;

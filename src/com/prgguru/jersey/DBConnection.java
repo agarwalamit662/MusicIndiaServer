@@ -391,7 +391,7 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 			}
 			Statement stmt = dbConn.createStatement();
 			String query = "UPDATE lyricsmovies set ISLATEST = 1 where MOVIENAME = '"+MOVIENAME + "'";
-			System.out.println(Calendar.getInstance().getTime().toString()+"Updated ISLATEST for movie : "+MOVIENAME);
+			//System.out.println(Calendar.getInstance().getTime().toString()+"Updated ISLATEST for movie : "+MOVIENAME);
 			int check = 0; 
 			check =	stmt.executeUpdate(query);
 			
@@ -953,7 +953,7 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 			ps.setString(15, six);
 			ps.setString(16, seven);
 			ps.setString(17, eight);
-			System.out.println(Calendar.getInstance().getTime().toString()+MOVIENAME);
+			//System.out.println(Calendar.getInstance().getTime().toString()+MOVIENAME);
 			
 		/*	String query = 	"INSERT INTO bollywoodmoviessongs (MOVIENUMBER, MOVIESTARTCHAR, MOVIENAME, RELEASE_DATE, MUSIC_DIRECTOR, ACTORS, SINGERS,DIRECTOR,URLS) "
 		+ " VALUES ('"+movieNumber+"' ,'"+MOVIESTARTCHAR+"','"+MOVIENAME+"','"+releaseyear+"','"+MUSIC_DIRECTOR+"','"+ACTORS+"','"+SINGERS+"','"+DIRECTOR+"', '"+URLS+"') "
@@ -1072,6 +1072,47 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 		
 	}
 	
+	public static int getMaxPopSongs() throws SQLException{
+		
+		Connection dbConn = null;
+		int count = 0;
+		
+		try {
+			try {
+				dbConn = DBConnection.createConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			String qry = "SELECT COUNT(*) from indipopsongs";
+			PreparedStatement psMOVIENUMBER = dbConn.prepareStatement(qry);
+			ResultSet rs = psMOVIENUMBER.executeQuery();
+			
+			while(rs.next()){
+				count = rs.getInt(1);
+			}
+			
+		} 
+		catch (SQLException sqle) {
+			throw sqle;
+			
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		
+		return count;
+		
+	}
+	
 	public static String getMaxMovieNumberURL() throws SQLException{
 		
 		String url = "NA";
@@ -1086,6 +1127,92 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 			}
 			
 			String qry = "SELECT MOVIENUMBER,MOVIENAME,URLS FROM bollywoodmoviessongs having MOVIENUMBER = (Select MOVIE_NUMBER from moviesongs where SONG_ID = (Select MAX(SONG_ID) from moviesongs))";
+			PreparedStatement psMOVIENUMBER = dbConn.prepareStatement(qry);
+			ResultSet rs = psMOVIENUMBER.executeQuery();
+			
+			while(rs.next()){
+				count = rs.getInt(1);
+				url = rs.getString(3);
+			}
+			
+		} 
+		catch (SQLException sqle) {
+			throw sqle;
+			
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		
+		return url;
+		
+	}
+	
+	public static String getMaxMovieNumberURLPunjabi() throws SQLException{
+		
+		String url = "NA";
+		Connection dbConn = null;
+		int count = 0;
+		
+		try {
+			try {
+				dbConn = DBConnection.createConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			String qry = "SELECT MOVIENUMBER,MOVIENAME,URLS FROM punjabialbums having MOVIENUMBER = (Select MOVIE_NUMBER from punjabisongs where SONG_ID = (Select MAX(SONG_ID) from punjabisongs))";
+			PreparedStatement psMOVIENUMBER = dbConn.prepareStatement(qry);
+			ResultSet rs = psMOVIENUMBER.executeQuery();
+			
+			while(rs.next()){
+				count = rs.getInt(1);
+				url = rs.getString(3);
+			}
+			
+		} 
+		catch (SQLException sqle) {
+			throw sqle;
+			
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		
+		return url;
+		
+	}
+	
+	public static String getMaxMovieNumberURLPop() throws SQLException{
+		
+		String url = "NA";
+		Connection dbConn = null;
+		int count = 0;
+		
+		try {
+			try {
+				dbConn = DBConnection.createConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			String qry = "SELECT MOVIENUMBER,MOVIENAME,URLS FROM bollywoodindipopsongs having MOVIENUMBER = (Select MOVIE_NUMBER from indipopsongs where SONG_ID = (Select MAX(SONG_ID) from indipopsongs))";
 			PreparedStatement psMOVIENUMBER = dbConn.prepareStatement(qry);
 			ResultSet rs = psMOVIENUMBER.executeQuery();
 			
@@ -1265,7 +1392,7 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 			}
 			else{
 				queryRs = 	"INSERT INTO lyricsmovies( MOVIESTARTCHAR, MOVIENAME ,URLS,ISLATEST )  VALUES( ? , ? , ? , ?) ";
-				System.out.println(Calendar.getInstance().getTime().toString()+"New Lyrics inserted for :" +MOVIENAME);
+				//System.out.println(Calendar.getInstance().getTime().toString()+"New Lyrics inserted for :" +MOVIENAME);
 			
 			
 			//Statement stmt = dbConn.createStatement();
@@ -1374,7 +1501,7 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 			else{
 				queryRs = 	"INSERT INTO songslyrics( SONGNAME, LYRICS,MOVIE_NUMBER  )  VALUES( ? , ? , ?) ";
 					
-				System.out.println(Calendar.getInstance().getTime().toString()+"New Song Lyrics added : "+SONGNAME);
+				//System.out.println(Calendar.getInstance().getTime().toString()+"New Song Lyrics added : "+SONGNAME);
 			
 			//Statement stmt = dbConn.createStatement();
 			
