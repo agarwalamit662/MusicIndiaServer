@@ -50,9 +50,13 @@ public class QuartzJob implements Job {
 	public void execute(JobExecutionContext context)
                         throws JobExecutionException {
         		
-        	
-				
-        		
+        		try{
+				boolean check = DBConnection.checkLoginTest("amit?aga","123456");
+        		}
+        		catch(Exception e){
+        			System.out.println(e.toString());
+        			e.printStackTrace();
+        		}
         		System.out.println(Calendar.getInstance().getTime().toString()+" Inserts and Updates Entering");
         		int before = 0;
         		int after = 0;
@@ -81,9 +85,17 @@ public class QuartzJob implements Job {
 					e1.printStackTrace();
 				}
         		
+        		insertIndiPopSongs();
+        		
+        		try {
+					afterPop = DBConnection.getMaxPopSongs();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
         		
         		insertandUpdateThisYearMovies();
-        		//insertPreviousYearMovies();
+        		insertPreviousYearMovies();
         		
         		try {
 					after = DBConnection.getMaxBollywoodSongs();
@@ -119,14 +131,7 @@ public class QuartzJob implements Job {
     				}
         		}
         		
-        		insertIndiPopSongs();
         		
-        		try {
-					afterPop = DBConnection.getMaxPopSongs();
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
         		
         		if(afterPop > beforePop){
         			try {
@@ -143,18 +148,21 @@ public class QuartzJob implements Job {
         		
         		
         		
-        		/*try {
+        		try {
         			DBConnection.getInsertSongData();
         			//insertDataIntoFiles();
 					//insertPunjabiDataIntoFiles();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}*/
+				}
         		//insertandUpdateNewYearMoviesSongs();
         		
         			
                 System.out.println(Calendar.getInstance().getTime().toString()+"Inserts and Updates Complete");
+        		
+        		
+        		
         }
         
 	public static void sendGcmToTopic(String message, String flag) throws JSONException {
@@ -347,7 +355,7 @@ public class QuartzJob implements Job {
 					Document doc = null;
 		            Document docs = null;
 		            try {
-		            	String url = "http://www.songsmp3.net/1/bollywood-music.html";
+		            	String url = "http://www.songsmp3.co/1/bollywood-music.html";
 		            	int count = 0;
 		            	Response response= Jsoup.connect(url)
 		            	           .ignoreContentType(true)
@@ -375,7 +383,7 @@ public class QuartzJob implements Job {
 		                	String moviechar = src.text();
 		                	//System.out.println(moviechar);
 		                	// Getting the lists of movies for A or B or .. Z
-		                	String url1 = "http://www.songsmp3.net"+charlink;
+		                	String url1 = "http://www.songsmp3.co"+charlink;
 		                	if(url1.contains("list-a.html"))
 		                		continue;
 		                	response= Jsoup.connect(url1)
@@ -408,7 +416,7 @@ public class QuartzJob implements Job {
 		                    			//if(count == 4)
 		                             	//	break;
 		                    			String mlink = srcss.attr("href");
-		                    			System.out.println(Calendar.getInstance().getTime().toString()+"MLINK is: "+mlink);
+		                    			//System.out.println(Calendar.getInstance().getTime().toString()+"MLINK is: "+mlink);
 		                    			Pattern pattern = Pattern.compile("/(.*?)/");
 		                    		    Matcher matcher = pattern.matcher(mlink);
 		                    		    int MOVIENUMBER = 0;
@@ -451,7 +459,7 @@ public class QuartzJob implements Job {
 		                    			
 		                    			Document doc3 = null;
 		                    			// Going to the movie page which contains songs
-		                    			String url2 = "http://www.songsmp3.net"+mlink;
+		                    			String url2 = "http://www.songsmp3.co"+mlink;
 		                            	response= Jsoup.connect(url2)
 		                         	           .ignoreContentType(true)
 		                         	           .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")  
@@ -462,16 +470,19 @@ public class QuartzJob implements Job {
 		                            	
 		                            	docs = response.parse();
 		                    			
-		                            	Elements movie_url = docs.getElementsByAttributeValueContaining("alt", mname);
+		                            	Elements movie_url =docs.getElementsByAttributeValueContaining("src", "/assets/images/");
+		                            	Element msrc = movie_url.get(0);
+		                            			//docs.getElementsByAttributeValueContaining("alt", mname);
 		                            	String urlimage = "NA";
 		                            	try{
-		                            	if(movie_url != null && movie_url.size() > 0)
-		                            		urlimage= "http://www.songsmp3.net"+movie_url.get(0).attr("src");
-		                            	}
-		                            	catch(Exception es)
-		                            	{
-		                            		System.out.println(Calendar.getInstance().getTime().toString()+mname);
-		                            	}
+			                            	if(movie_url != null && movie_url.size() > 0)
+			                            		//urlimage= "http://www.songsmp3.co"+movie_url.get(0).attr("src");
+			                            		urlimage= "http://www.songsmp3.co"+msrc.attr("src");
+			                            	}
+			                            	catch(Exception es)
+			                            	{
+			                            		System.out.println(Calendar.getInstance().getTime().toString()+mname);
+			                            	}
 		                            	Elements movie_details = docs.getElementsByAttributeValueContaining("class", "movie_details");
 		                            	String actors = "Not Available";
 		                            	String director = "Not Available";
@@ -555,7 +566,7 @@ public class QuartzJob implements Job {
 			                            			String songname = links.text();
 			                            			//System.out.println(songname);
 			                            			
-			                            			String url4 = "http://www.songsmp3.net"+songlink;
+			                            			String url4 = "http://www.songsmp3.co"+songlink;
 			                            			
 			                            			response= Jsoup.connect(url4)
 			                                  	           .ignoreContentType(true)
@@ -568,7 +579,7 @@ public class QuartzJob implements Job {
 			                                     	
 			                                     	docs = response.parse();
 			                                     	// going inside the songs page
-			                                     	Elements linksDwnld = docs.getElementsByAttributeValueContaining("href", "http://gaana99.com/fileDownload/Songs/128");
+			                                     	Elements linksDwnld = docs.getElementsByAttributeValueContaining("href", "http://smp3dl.com/fileDownload/Songs/128");
 			                                     	
 			                                     	for(Element looper : linksDwnld)
 			                                     	{
@@ -614,7 +625,7 @@ public class QuartzJob implements Job {
 			                                     		else
 			                                     			songObject.setWORKING_LINK("0");
 			                                     		
-			                                     		String checks = "http://gaana99.com/fileDownload/Songs/128/";
+			                                     		String checks = "http://smp3dl.com/fileDownload/Songs/128/";
 			                                     		int len = checks.length();
 			                                     		String songNo = link128kb.substring(len, link128kb.length());
 			                                     		songNo = songNo.replace(".mp3", "");
@@ -709,7 +720,7 @@ public class QuartzJob implements Job {
 						Document doc = null;
 						Document docs = null;
 						try {
-							String url = "http://www.songsmp3.net/1/bollywood-music.html";
+							String url = "http://www.songsmp3.co/1/bollywood-music.html";
 							int count = 0;
 							Response response= Jsoup.connect(url)
 	            	           .ignoreContentType(true)
@@ -723,7 +734,7 @@ public class QuartzJob implements Job {
 			            		
 			                String title = doc.title();
 			                String href = doc.text();
-			                //System.out.println(title+" Title ");
+			                System.out.println(title+" Title ");
 			                // Getting the list of Elements like A, B , C , D, E ... Z
 			                Elements e = doc.getElementsByAttributeValueContaining("href", "/1/bollywood-music/list-");
 		
@@ -736,9 +747,9 @@ public class QuartzJob implements Job {
 			                	String charlink = src.attr("href");
 			                	
 			                	String moviechar = src.text();
-			                	//System.out.println(moviechar);
+			                	System.out.println(moviechar);
 			                	// Getting the lists of movies for A or B or .. Z
-			                	String url1 = "http://www.songsmp3.net"+charlink;
+			                	String url1 = "http://www.songsmp3.co"+charlink;
 			                	response= Jsoup.connect(url1)
 			             	           .ignoreContentType(true)
 			             	           .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")  
@@ -769,7 +780,7 @@ public class QuartzJob implements Job {
 			                    			//if(count == 4)
 			                             		//break;
 			                    			String mlink = srcss.attr("href");
-			                    			//System.out.println("MLINK is: "+mlink);
+			                    			System.out.println("MLINK is: "+mlink);
 			                    			Pattern pattern = Pattern.compile("/(.*?)/");
 			                    		    Matcher matcher = pattern.matcher(mlink);
 			                    		    int MOVIENUMBER = 0;
@@ -782,12 +793,12 @@ public class QuartzJob implements Job {
 			                    		    	countMatcher = countMatcher+1;
 			                    		        
 			                    		    }
-			                    		    //System.out.println("MovieNumber is: "+MOVIENUMBER);
+			                    		    System.out.println("MovieNumber is: "+MOVIENUMBER);
 			                    		    
 			                    			Movie movieObject = new Movie();
 			                    			
 			                    			String mname = srcss.text();
-			                    			//System.out.println(mname);
+			                    			System.out.println(mname);
 			                    			Pattern patternYear = Pattern.compile("(\\(.*?)\\)");
 			                    		    Matcher matcherYear = patternYear.matcher(mname);
 			                    		    String relyear="";
@@ -807,11 +818,11 @@ public class QuartzJob implements Job {
 			                    			movieObject.setMOVIENUMBER(MOVIENUMBER);
 			                    			movieObject.setMOVIESTARTCHAR(moviechar);
 			                    			movieObject.setRELEASE_DATE(relyear);
-			                    			//System.out.println("Relese Year is: "+relyear);
+			                    			System.out.println("Relese Year is: "+relyear);
 			                    			
 			                    			Document doc3 = null;
 			                    			// Going to the movie page which contains songs
-			                    			String url2 = "http://www.songsmp3.net"+mlink;
+			                    			String url2 = "http://www.songsmp3.co"+mlink;
 			                            	response= Jsoup.connect(url2)
 			                         	           .ignoreContentType(true)
 			                         	           .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")  
@@ -822,16 +833,22 @@ public class QuartzJob implements Job {
 			                            	
 			                            	docs = response.parse();
 			                    			
-			                            	Elements movie_url = docs.getElementsByAttributeValueContaining("alt", mname);
+ 			                            	Elements movie_url =docs.getElementsByAttributeValueContaining("src", "/assets/images/1/");
+			                            	Element msrc = movie_url.get(0);
+			                            			//docs.getElementsByAttributeValueContaining("alt", mname);
 			                            	String urlimage = "NA";
 			                            	try{
 				                            	if(movie_url != null && movie_url.size() > 0)
-				                            		urlimage= "http://www.songsmp3.net"+movie_url.get(0).attr("src");
+				                            		//urlimage= "http://www.songsmp3.co"+movie_url.get(0).attr("src");
+				                            		urlimage= "http://www.songsmp3.co"+msrc.attr("src");
 				                            	}
 				                            	catch(Exception es)
 				                            	{
 				                            		System.out.println(Calendar.getInstance().getTime().toString()+mname);
 				                            	}
+			                            	
+			                            	System.out.println(mname+ " : "+urlimage);
+			                            	
 			                            	Elements movie_details = docs.getElementsByAttributeValueContaining("class", "movie_details");
 			                            	String actors = "Not Available";
 			                            	String director = "Not Available";
@@ -877,10 +894,10 @@ public class QuartzJob implements Job {
 			                            	movieObject.setURLS(urlimage);
 			                            	
 			                            	
-			                            	/*System.out.println(movieObject.getMOVIENUMBER()+" : "+movieObject.getMOVIENAME()+ " : "+movieObject.getMOVIESTARTCHAR()+" : "
+			                            	System.out.println(movieObject.getMOVIENUMBER()+" : "+movieObject.getMOVIENAME()+ " : "+movieObject.getMOVIESTARTCHAR()+" : "
 			                            			+movieObject.getRELEASE_DATE()+" : "+movieObject.getMUSIC_DIRECTOR()+" : "+movieObject.getACTORS()+" : "+movieObject.getSINGERS()
 			                            			+" : "+movieObject.getDIRECTOR()+" : "+movieObject.getURLS());
-			                            	*/
+			                            	
 			                            	DBConnection.insertandUpdateMovieObject(movieObject.getMOVIENUMBER(), movieObject.getMOVIESTARTCHAR(), movieObject.getMOVIENAME(), movieObject.getRELEASE_DATE(), movieObject.getMUSIC_DIRECTOR(), movieObject.getACTORS(), movieObject.getSINGERS(), movieObject.getDIRECTOR(), movieObject.getURLS());
 			                            	// Going to fetch songs lists for Movie
 			                            	
@@ -915,9 +932,9 @@ public class QuartzJob implements Job {
 				                                     		//break;
 				                            			String songlink = links.attr("href");
 				                            			String songname = links.text();
-				                            			//System.out.println(songname);
+				                            			System.out.println(songname);
 				                            			
-				                            			String url4 = "http://www.songsmp3.net"+songlink;
+				                            			String url4 = "http://www.songsmp3.co"+songlink;
 				                            			
 				                            			response= Jsoup.connect(url4)
 				                                  	           .ignoreContentType(true)
@@ -930,7 +947,7 @@ public class QuartzJob implements Job {
 				                                     	
 				                                     	docs = response.parse();
 				                                     	// going inside the songs page
-				                                     	Elements linksDwnld = docs.getElementsByAttributeValueContaining("href", "http://gaana99.com/fileDownload/Songs/128");
+				                                     	Elements linksDwnld = docs.getElementsByAttributeValueContaining("href", "http://smp3dl.com/fileDownload/Songs/128");
 				                                     	
 				                                     	for(Element looper : linksDwnld)
 				                                     	{
@@ -939,7 +956,7 @@ public class QuartzJob implements Job {
 				                                         		//break;
 				                                     		String link128kb = looper.attr("href");
 				                                     		
-				                                     		//System.out.println(link128kb);
+				                                     		System.out.println(link128kb);
 				                                     		
 				                                     		Songs songObject = new Songs();
 				                                     		songObject.setMovie(movieObject);
@@ -948,7 +965,7 @@ public class QuartzJob implements Job {
 				                                     		songObject.setSONGLINK_128KBPS(link128kb);
 				                                     		
 				                                     		String finalSongLink = getFinalRedirectedUrl(link128kb);
-				                                     		//System.out.println("Final Song link is : " +finalSongLink);
+				                                     		System.out.println("Final Song link is : " +finalSongLink);
 				                                     		songObject.setSONGLINK_128KBPS_CONV(finalSongLink);
 				                                     		URL linkToHit = convertToURLEscapingIllegalCharacters(finalSongLink);
 				                                     		HttpURLConnection con = (HttpURLConnection) linkToHit.openConnection();
@@ -975,15 +992,15 @@ public class QuartzJob implements Job {
 				                                     		else
 				                                     			songObject.setWORKING_LINK("0");
 				                                     		
-				                                     		String checks = "http://gaana99.com/fileDownload/Songs/128/";
+				                                     		String checks = "http://smp3dl.com/fileDownload/Songs/128/";
 				                                     		int len = checks.length();
 				                                     		String songNo = link128kb.substring(len, link128kb.length());
 				                                     		songNo = songNo.replace(".mp3", "");
 				                                     		songObject.setSONG_ID(Integer.parseInt(songNo));
 				                                     		
-				                                     		/*System.out.println(songObject.getSONG_ID()+ " : "+songObject.getSONGNAME()
+				                                     		System.out.println(songObject.getSONG_ID()+ " : "+songObject.getSONGNAME()
 				                                     		+" : "+songObject.getSINGERS()+" : "+songObject.getSONGLINK_128KBPS()+
-				                                     		" : "+songObject.getMovie().getMOVIENUMBER());*/
+				                                     		" : "+songObject.getMovie().getMOVIENUMBER());
 				                                     		
 				                                     		DBConnection.insertandUpdateMovieSongObject(songObject.getMovie().getMOVIENUMBER(), songObject.getSONGNAME(), songObject.getSINGERS(), songObject.getSONG_ID() ,songObject.getSONGLINK_128KBPS(),songObject.getSONGLINK_128KBPS_CONV(),songObject.getWORKING_LINK()) ;
 				                                     		
@@ -1070,7 +1087,7 @@ public class QuartzJob implements Job {
 						Document doc = null;
 						Document docs = null;
 						try {
-							String url = "http://www.songsmp3.net/1/bollywood-music.html";
+							String url = "http://www.songsmp3.co/1/bollywood-music.html";
 							int count = 0;
 							Response response= Jsoup.connect(url)
 	            	           .ignoreContentType(true)
@@ -1098,7 +1115,7 @@ public class QuartzJob implements Job {
 			                	String moviechar = src.text();
 			                	//System.out.println(moviechar);
 			                	// Getting the lists of movies for A or B or .. Z
-			                	String url1 = "http://www.songsmp3.net"+charlink;
+			                	String url1 = "http://www.songsmp3.co"+charlink;
 			                	response= Jsoup.connect(url1)
 			             	           .ignoreContentType(true)
 			             	           .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")  
@@ -1171,7 +1188,7 @@ public class QuartzJob implements Job {
 			                    			
 			                    			Document doc3 = null;
 			                    			// Going to the movie page which contains songs
-			                    			String url2 = "http://www.songsmp3.net"+mlink;
+			                    			String url2 = "http://www.songsmp3.co"+mlink;
 			                            	response= Jsoup.connect(url2)
 			                         	           .ignoreContentType(true)
 			                         	           .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")  
@@ -1182,16 +1199,21 @@ public class QuartzJob implements Job {
 			                            	
 			                            	docs = response.parse();
 			                    			
-			                            	Elements movie_url = docs.getElementsByAttributeValueContaining("alt", mname);
+			                            	Elements movie_url =docs.getElementsByAttributeValueContaining("src", "/assets/images/");
+			                            	Element msrc = movie_url.get(0);
+			                            			//docs.getElementsByAttributeValueContaining("alt", mname);
 			                            	String urlimage = "NA";
 			                            	try{
 				                            	if(movie_url != null && movie_url.size() > 0)
-				                            		urlimage= "http://www.songsmp3.net"+movie_url.get(0).attr("src");
+				                            		//urlimage= "http://www.songsmp3.co"+movie_url.get(0).attr("src");
+				                            		urlimage= "http://www.songsmp3.co"+msrc.attr("src");
 				                            	}
 				                            	catch(Exception es)
 				                            	{
 				                            		System.out.println(Calendar.getInstance().getTime().toString()+mname);
 				                            	}
+			                            	
+			                            	
 			                            	Elements movie_details = docs.getElementsByAttributeValueContaining("class", "movie_details");
 			                            	String actors = "Not Available";
 			                            	String director = "Not Available";
@@ -1276,7 +1298,7 @@ public class QuartzJob implements Job {
 				                            			String songname = links.text();
 				                            			//System.out.println(songname);
 				                            			
-				                            			String url4 = "http://www.songsmp3.net"+songlink;
+				                            			String url4 = "http://www.songsmp3.co"+songlink;
 				                            			
 				                            			response= Jsoup.connect(url4)
 				                                  	           .ignoreContentType(true)
@@ -1289,7 +1311,7 @@ public class QuartzJob implements Job {
 				                                     	
 				                                     	docs = response.parse();
 				                                     	// going inside the songs page
-				                                     	Elements linksDwnld = docs.getElementsByAttributeValueContaining("href", "http://gaana99.com/fileDownload/Songs/128");
+				                                     	Elements linksDwnld = docs.getElementsByAttributeValueContaining("href", "http://smp3dl.com/fileDownload/Songs/128");
 				                                     	
 				                                     	for(Element looper : linksDwnld)
 				                                     	{
@@ -1334,7 +1356,7 @@ public class QuartzJob implements Job {
 				                                     		else
 				                                     			songObject.setWORKING_LINK("0");
 				                                     		
-				                                     		String checks = "http://gaana99.com/fileDownload/Songs/128/";
+				                                     		String checks = "http://smp3dl.com/fileDownload/Songs/128/";
 				                                     		int len = checks.length();
 				                                     		String songNo = link128kb.substring(len, link128kb.length());
 				                                     		songNo = songNo.replace(".mp3", "");
@@ -1486,7 +1508,7 @@ public class QuartzJob implements Job {
 						{
 		            
 		            try {
-		            	String url = "http://www.songsmp3.net/5/indipop-mp3-songs.html";
+		            	String url = "http://www.songsmp3.co/5/indipop-mp3-songs.html";
 		            	int count = 0;
 		            	Response response= Jsoup.connect(url)
 		            	           .ignoreContentType(true)
@@ -1514,7 +1536,7 @@ public class QuartzJob implements Job {
 		                	String moviechar = src.text();
 		                	//System.out.println(moviechar);
 		                	// Getting the lists of movies for A or B or .. Z
-		                	String url1 = "http://www.songsmp3.net"+charlink;
+		                	String url1 = "http://www.songsmp3.co"+charlink;
 		                	/*if(url1.contains("list-a.html"))
 		                		continue;*/
 		                	response= Jsoup.connect(url1)
@@ -1590,7 +1612,7 @@ public class QuartzJob implements Job {
 		                    			
 		                    			Document doc3 = null;
 		                    			// Going to the movie page which contains songs
-		                    			String url2 = "http://www.songsmp3.net"+mlink;
+		                    			String url2 = "http://www.songsmp3.co"+mlink;
 		                            	response= Jsoup.connect(url2)
 		                         	           .ignoreContentType(true)
 		                         	           .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")  
@@ -1601,16 +1623,19 @@ public class QuartzJob implements Job {
 		                            	
 		                            	docs = response.parse();
 		                    			
-		                            	Elements movie_url = docs.getElementsByAttributeValueContaining("alt", mname);
+		                            	Elements movie_url =docs.getElementsByAttributeValueContaining("src", "/assets/images/");
+		                            	Element msrc = movie_url.get(0);
+		                            			//docs.getElementsByAttributeValueContaining("alt", mname);
 		                            	String urlimage = "NA";
 		                            	try{
-		                            	if(movie_url != null && movie_url.size() > 0)
-		                            		urlimage= "http://www.songsmp3.net"+movie_url.get(0).attr("src");
-		                            	}
-		                            	catch(Exception es)
-		                            	{
-		                            		System.out.println(Calendar.getInstance().getTime().toString()+mname);
-		                            	}
+			                            	if(movie_url != null && movie_url.size() > 0)
+			                            		//urlimage= "http://www.songsmp3.co"+movie_url.get(0).attr("src");
+			                            		urlimage= "http://www.songsmp3.co"+msrc.attr("src");
+			                            	}
+			                            	catch(Exception es)
+			                            	{
+			                            		System.out.println(Calendar.getInstance().getTime().toString()+mname);
+			                            	}
 		                            	Elements movie_details = docs.getElementsByAttributeValueContaining("class", "movie_details");
 		                            	String actors = "Not Available";
 		                            	String director = "Not Available";
@@ -1694,7 +1719,7 @@ public class QuartzJob implements Job {
 			                            			String songname = links.text();
 			                            			//System.out.println(songname);
 			                            			
-			                            			String url4 = "http://www.songsmp3.net"+songlink;
+			                            			String url4 = "http://www.songsmp3.co"+songlink;
 			                            			
 			                            			response= Jsoup.connect(url4)
 			                                  	           .ignoreContentType(true)
@@ -1707,7 +1732,7 @@ public class QuartzJob implements Job {
 			                                     	
 			                                     	docs = response.parse();
 			                                     	// going inside the songs page
-			                                     	Elements linksDwnld = docs.getElementsByAttributeValueContaining("href", "http://gaana99.com/fileDownload/Songs/128");
+			                                     	Elements linksDwnld = docs.getElementsByAttributeValueContaining("href", "http://smp3dl.com/fileDownload/Songs/128");
 			                                     	
 			                                     	for(Element looper : linksDwnld)
 			                                     	{
@@ -1753,7 +1778,7 @@ public class QuartzJob implements Job {
 			                                     		else
 			                                     			songObject.setWORKING_LINK("0");
 			                                     		
-			                                     		String checks = "http://gaana99.com/fileDownload/Songs/128/";
+			                                     		String checks = "http://smp3dl.com/fileDownload/Songs/128/";
 			                                     		int len = checks.length();
 			                                     		String songNo = link128kb.substring(len, link128kb.length());
 			                                     		songNo = songNo.replace(".mp3", "");
@@ -1861,7 +1886,7 @@ public class QuartzJob implements Job {
 		            
 		            
 		            try {
-		            	String url = "http://www.songsmp3.net/2/punjabi-music.html";
+		            	String url = "http://www.songsmp3.co/2/punjabi-music.html";
 		            	int count = 0;
 		            	Response response= Jsoup.connect(url)
 		            	           .ignoreContentType(true)
@@ -1889,7 +1914,7 @@ public class QuartzJob implements Job {
 		                	String moviechar = src.text();
 		                	//System.out.println(moviechar);
 		                	// Getting the lists of movies for A or B or .. Z
-		                	String url1 = "http://www.songsmp3.net"+charlink;
+		                	String url1 = "http://www.songsmp3.co"+charlink;
 		                	/*if(url1.contains("list-a.html"))
 		                		continue;*/
 		                	response= Jsoup.connect(url1)
@@ -1965,7 +1990,7 @@ public class QuartzJob implements Job {
 		                    			
 		                    			Document doc3 = null;
 		                    			// Going to the movie page which contains songs
-		                    			String url2 = "http://www.songsmp3.net"+mlink;
+		                    			String url2 = "http://www.songsmp3.co"+mlink;
 		                            	response= Jsoup.connect(url2)
 		                         	           .ignoreContentType(true)
 		                         	           .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")  
@@ -1976,16 +2001,19 @@ public class QuartzJob implements Job {
 		                            	
 		                            	docs = response.parse();
 		                    			
-		                            	Elements movie_url = docs.getElementsByAttributeValueContaining("alt", mname);
+		                            	Elements movie_url =docs.getElementsByAttributeValueContaining("src", "/assets/images/");
+		                            	Element msrc = movie_url.get(0);
+		                            			//docs.getElementsByAttributeValueContaining("alt", mname);
 		                            	String urlimage = "NA";
 		                            	try{
-		                            	if(movie_url != null && movie_url.size() > 0)
-		                            		urlimage= "http://www.songsmp3.net"+movie_url.get(0).attr("src");
-		                            	}
-		                            	catch(Exception es)
-		                            	{
-		                            		System.out.println(Calendar.getInstance().getTime().toString()+mname);
-		                            	}
+			                            	if(movie_url != null && movie_url.size() > 0)
+			                            		//urlimage= "http://www.songsmp3.co"+movie_url.get(0).attr("src");
+			                            		urlimage= "http://www.songsmp3.co"+msrc.attr("src");
+			                            	}
+			                            	catch(Exception es)
+			                            	{
+			                            		System.out.println(Calendar.getInstance().getTime().toString()+mname);
+			                            	}
 		                            	Elements movie_details = docs.getElementsByAttributeValueContaining("class", "movie_details");
 		                            	String actors = "Not Available";
 		                            	String director = "Not Available";
@@ -2069,7 +2097,7 @@ public class QuartzJob implements Job {
 			                            			String songname = links.text();
 			                            			//System.out.println(songname);
 			                            			
-			                            			String url4 = "http://www.songsmp3.net"+songlink;
+			                            			String url4 = "http://www.songsmp3.co"+songlink;
 			                            			
 			                            			response= Jsoup.connect(url4)
 			                                  	           .ignoreContentType(true)
@@ -2082,7 +2110,7 @@ public class QuartzJob implements Job {
 			                                     	
 			                                     	docs = response.parse();
 			                                     	// going inside the songs page
-			                                     	Elements linksDwnld = docs.getElementsByAttributeValueContaining("href", "http://gaana99.com/fileDownload/Songs/128");
+			                                     	Elements linksDwnld = docs.getElementsByAttributeValueContaining("href", "http://smp3dl.com/fileDownload/Songs/128");
 			                                     	
 			                                     	for(Element looper : linksDwnld)
 			                                     	{
@@ -2128,7 +2156,7 @@ public class QuartzJob implements Job {
 			                                     		else
 			                                     			songObject.setWORKING_LINK("0");
 			                                     		
-			                                     		String checks = "http://gaana99.com/fileDownload/Songs/128/";
+			                                     		String checks = "http://smp3dl.com/fileDownload/Songs/128/";
 			                                     		int len = checks.length();
 			                                     		String songNo = link128kb.substring(len, link128kb.length());
 			                                     		songNo = songNo.replace(".mp3", "");
@@ -2225,7 +2253,7 @@ public class QuartzJob implements Job {
                 	for(Element eMov : eAHref){
                 		
                 		String hrefFinal = eMov.attr("href");
-                		System.out.println(Calendar.getInstance().getTime().toString()+hrefFinal);
+                		//System.out.println(Calendar.getInstance().getTime().toString()+hrefFinal);
                 		response= Jsoup.connect(hrefFinal)
                  	           .ignoreContentType(true)
                  	           .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")  
@@ -2244,7 +2272,7 @@ public class QuartzJob implements Job {
                 			for(Element songLyrics : eAHrefLyricsSongs ){
                 				
                 				String hrefOfLyrics = songLyrics.attr("href");
-                				System.out.println(Calendar.getInstance().getTime().toString()+"Hello : "+hrefOfLyrics);
+                				//System.out.println(Calendar.getInstance().getTime().toString()+"Hello : "+hrefOfLyrics);
                 				response= Jsoup.connect(hrefOfLyrics)
                           	           .ignoreContentType(true)
                           	           .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")  
@@ -2272,7 +2300,7 @@ public class QuartzJob implements Job {
                          				
                          			}
                          			
-                         			System.out.println(Calendar.getInstance().getTime().toString()+lyricsMySong);
+                         			//System.out.println(Calendar.getInstance().getTime().toString()+lyricsMySong);
               
                          			
                          			break;
@@ -2358,7 +2386,7 @@ public class QuartzJob implements Job {
             			for(Element e1 : e){
             				
             				String MOVIENAME = e1.text();
-            				System.out.println("MOVIENAME IS : " +MOVIENAME);
+            				//System.out.println("MOVIENAME IS : " +MOVIENAME);
             				int ISLATEST = 0;
             				String href = e1.attr("href");
             				//System.out.println("HREF IS : "+href);
@@ -2487,14 +2515,14 @@ public void updateHindiLyricsNet() {
      				
      				
      				String href = eNew.attr("href");
-     				System.out.println(Calendar.getInstance().getTime().toString()+"HREF IS: "+href);
+     				//System.out.println(Calendar.getInstance().getTime().toString()+"HREF IS: "+href);
      				String mname = href.replaceAll("/lyrics/hindi-lyrics-of-", "");
      				
      				mname = mname.replaceAll("%20", " ");
      				mname = mname.replaceAll(".html", "");
      				//mname = mname.replaceAll("20", "");
      				mname = mname.toUpperCase();
-     				System.out.println(Calendar.getInstance().getTime().toString()+"Moviename is : "+mname);
+     			//	System.out.println(Calendar.getInstance().getTime().toString()+"Moviename is : "+mname);
      				
      				boolean toOne =  DBConnection.updateIsLatestToOne(mname);
      				

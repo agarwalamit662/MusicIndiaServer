@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -204,6 +205,42 @@ public static String getUpdateLink() throws Exception{
 		}
 		return isUserAvailable;
 	}
+	
+	public static boolean checkLoginTest(String uname, String pwd) throws Exception {
+		boolean isUserAvailable = false;
+		Connection dbConn = null;
+		try {
+			try {
+				dbConn = DBConnection.createConnection();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Statement stmt = dbConn.createStatement();
+			String query = "SELECT * FROM user WHERE username like '%" + uname
+					+ "%' AND password=" + "'" + pwd + "'";
+			
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				
+				isUserAvailable = true;
+			}
+		} catch (SQLException sqle) {
+			throw sqle;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return isUserAvailable;
+	}
+	
 	/**
 	 * Method to insert uname and pwd in DB
 	 * 
@@ -263,7 +300,8 @@ public static String getUpdateLink() throws Exception{
 				e.printStackTrace();
 			}
 			Statement stmt = dbConn.createStatement();
-			String query = "INSERT into myappusers(deviceid, rating, comments) values('"+did+ "',0,'')";
+			String query = "INSERT into myappusers(deviceid, rating, comments) values('"+did+ "',0,'')"+
+					 " ON DUPLICATE KEY UPDATE deviceid = '"+did+"'";
 			
 			int records = stmt.executeUpdate(query);
 			//System.out.println(records);
@@ -2246,8 +2284,27 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					
 					jobj.put("sid", SONG_ID);
 					jobj.put("working", WORKING_LINK);
-					jobj.put("workinglink", SONGLINK_128KBPS_CONV);
-					jobj.put("orglink", SONGLINK_128KBPS);
+					
+					if(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")){
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll("/128/", "/0/");
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceFirst("/convert/", "/data/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(SONG_ID+"/128/", String.valueOf(MOVIENUMBER)+"/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						//SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll("[(SongsMp3.Com)]", "");
+						//SONGLINK_128KBPS_CONV = StringUtils.replace(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)", "");
+						SONGLINK_128KBPS_CONV = StringUtils.remove(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)");
+						
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					else{
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					
 					jobj.put("singers", SINGERSSONGS);
 					jobj.put("sname", SONGNAME);
 					ja.put(jobj);
@@ -2399,8 +2456,26 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					
 					jobj.put("sid", SONG_ID);
 					jobj.put("working", WORKING_LINK);
-					jobj.put("workinglink", SONGLINK_128KBPS_CONV);
-					jobj.put("orglink", SONGLINK_128KBPS);
+					System.out.println(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")?true:false);
+					if(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")){
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll("/128/", "/0/");
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceFirst("/convert/", "/data/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(SONG_ID+"/128/", String.valueOf(MOVIENUMBER)+"/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						//SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll("[(SongsMp3.Com)]", "");
+						//SONGLINK_128KBPS_CONV = StringUtils.replace(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)", "");
+						SONGLINK_128KBPS_CONV = StringUtils.remove(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)");
+						
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					else{
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
 					jobj.put("singers", SINGERSSONGS);
 					jobj.put("sname", SONGNAME);
 					ja.put(jobj);
@@ -2488,7 +2563,7 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					SONGLINK_128KBPS = rsSongs.getString(4);
 					SINGERSSONGS = rsSongs.getString(5);
 					SONGNAME = rsSongs.getString(6);
-					
+					MOVIE_NUMBER = rsSongs.getInt(7);
 					if(SONGNAME == null){
 						SONGNAME = "NA";
 					}
@@ -2508,8 +2583,29 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					
 					jobj.put("sid", SONG_ID);
 					jobj.put("working", WORKING_LINK);
-					jobj.put("workinglink", SONGLINK_128KBPS_CONV);
-					jobj.put("orglink", SONGLINK_128KBPS);
+					
+					if(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")){
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll("/128/", "/0/");
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceFirst("/convert/", "/data/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(SONG_ID+"/128/", String.valueOf(MOVIE_NUMBER)+"/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						//SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll("[(SongsMp3.Com)]", "");
+						//SONGLINK_128KBPS_CONV = StringUtils.replace(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)", "");
+						SONGLINK_128KBPS_CONV = StringUtils.remove(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)");
+						
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					else{
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					
+					/*jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+					jobj.put("orglink", SONGLINK_128KBPS);*/
 					jobj.put("singers", SINGERSSONGS);
 					jobj.put("sname", SONGNAME);
 					if(rsSongs.getString(8) == null){
@@ -2894,8 +2990,29 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					}
 					
 					jobj.put("sid", SONG_ID);
-					jobj.put("working", WORKING_LINK);
-					jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+					
+					if(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")){
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll("/128/", "/0/");
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceFirst("/convert/", "/data/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(SONG_ID+"/128/", String.valueOf(MOVIENUMBER)+"/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						//SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll("[(SongsMp3.Com)]", "");
+						//SONGLINK_128KBPS_CONV = StringUtils.replace(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)", "");
+						SONGLINK_128KBPS_CONV = StringUtils.remove(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)");
+						
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					else{
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					
+					/*jobj.put("working", WORKING_LINK);
+					jobj.put("workinglink", SONGLINK_128KBPS_CONV);*/
 					jobj.put("orglink", SONGLINK_128KBPS);
 					jobj.put("singers", SINGERSSONGS);
 					jobj.put("sname", SONGNAME);
@@ -2976,6 +3093,7 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					SONGLINK_128KBPS = rsSongs.getString(4);
 					SINGERSSONGS = rsSongs.getString(5);
 					SONGNAME = rsSongs.getString(6);
+					MOVIE_NUMBER = rsSongs.getInt(7);
 					MOVIENAME = rsSongs.getString(8);
 					URLS = rsSongs.getString(9);
 					if(MOVIENAME == null){
@@ -3005,8 +3123,29 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 						WORKING_LINK = "NA";
 					}
 					jobj.put("sid", SONG_ID);
-					jobj.put("working", WORKING_LINK);
-					jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+					
+					if(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")){
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll("/128/", "/0/");
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceFirst("/convert/", "/data/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(SONG_ID+"/128/", String.valueOf(MOVIE_NUMBER)+"/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						//SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll("[(SongsMp3.Com)]", "");
+						//SONGLINK_128KBPS_CONV = StringUtils.replace(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)", "");
+						SONGLINK_128KBPS_CONV = StringUtils.remove(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)");
+						
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					else{
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					
+					/*jobj.put("working", WORKING_LINK);
+					jobj.put("workinglink", SONGLINK_128KBPS_CONV);*/
 					jobj.put("orglink", SONGLINK_128KBPS);
 					jobj.put("singers", SINGERSSONGS);
 					jobj.put("sname", SONGNAME);
@@ -3087,7 +3226,7 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					SONGNAME = rsSongs.getString(6);
 					MOVIENAME = rsSongs.getString(8);
 					URLS = rsSongs.getString(9);
-					
+					MOVIE_NUMBER = rsSongs.getInt(7);
 					
 					if(MOVIENAME == null){
 						MOVIENAME = "NA";
@@ -3118,8 +3257,29 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					
 					jobj.put("sid", SONG_ID);
 					jobj.put("working", WORKING_LINK);
-					jobj.put("workinglink", SONGLINK_128KBPS_CONV);
-					jobj.put("orglink", SONGLINK_128KBPS);
+					/*jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+					jobj.put("orglink", SONGLINK_128KBPS);*/
+					
+					if(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")){
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll("/128/", "/0/");
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceFirst("/convert/", "/data/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(SONG_ID+"/128/", String.valueOf(MOVIE_NUMBER)+"/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						//SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll("[(SongsMp3.Com)]", "");
+						//SONGLINK_128KBPS_CONV = StringUtils.replace(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)", "");
+						SONGLINK_128KBPS_CONV = StringUtils.remove(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)");
+						
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					else{
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					
 					jobj.put("singers", SINGERSSONGS);
 					jobj.put("sname", SONGNAME);
 					jobj.put("mname", MOVIENAME);
@@ -3366,8 +3526,29 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					
 					jobj.put("sid", SONG_ID);
 					jobj.put("working", WORKING_LINK);
-					jobj.put("workinglink", SONGLINK_128KBPS_CONV);
-					jobj.put("orglink", SONGLINK_128KBPS);
+					/*jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+					jobj.put("orglink", SONGLINK_128KBPS);*/
+					
+					if(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")){
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll("/128/", "/0/");
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceFirst("/convert/", "/data/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(SONG_ID+"/128/", String.valueOf(MOVIENUMBER)+"/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						//SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll("[(SongsMp3.Com)]", "");
+						//SONGLINK_128KBPS_CONV = StringUtils.replace(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)", "");
+						SONGLINK_128KBPS_CONV = StringUtils.remove(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)");
+						
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					else{
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					
 					jobj.put("singers", SINGERSSONGS);
 					jobj.put("sname", SONGNAME);
 					ja.put(jobj);
@@ -3518,8 +3699,29 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					
 					jobj.put("sid", SONG_ID);
 					jobj.put("working", WORKING_LINK);
-					jobj.put("workinglink", SONGLINK_128KBPS_CONV);
-					jobj.put("orglink", SONGLINK_128KBPS);
+					/*jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+					jobj.put("orglink", SONGLINK_128KBPS);*/
+					
+					if(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")){
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll("/128/", "/0/");
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceFirst("/convert/", "/data/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(SONG_ID+"/128/", String.valueOf(MOVIENUMBER)+"/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						//SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll("[(SongsMp3.Com)]", "");
+						//SONGLINK_128KBPS_CONV = StringUtils.replace(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)", "");
+						SONGLINK_128KBPS_CONV = StringUtils.remove(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)");
+						
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					else{
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					
 					jobj.put("singers", SINGERSSONGS);
 					jobj.put("sname", SONGNAME);
 					ja.put(jobj);
@@ -3672,8 +3874,29 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					
 					jobj.put("sid", SONG_ID);
 					jobj.put("working", WORKING_LINK);
-					jobj.put("workinglink", SONGLINK_128KBPS_CONV);
-					jobj.put("orglink", SONGLINK_128KBPS);
+					/*jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+					jobj.put("orglink", SONGLINK_128KBPS);*/
+					
+					if(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")){
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll("/128/", "/0/");
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceFirst("/convert/", "/data/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(SONG_ID+"/128/", String.valueOf(MOVIENUMBER)+"/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						//SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll("[(SongsMp3.Com)]", "");
+						//SONGLINK_128KBPS_CONV = StringUtils.replace(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)", "");
+						SONGLINK_128KBPS_CONV = StringUtils.remove(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)");
+						
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					else{
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					
 					jobj.put("singers", SINGERSSONGS);
 					jobj.put("sname", SONGNAME);
 					ja.put(jobj);
@@ -3829,8 +4052,29 @@ public static boolean updateIsLatestToOne(String MOVIENAME) throws SQLException{
 					
 					jobj.put("sid", SONG_ID);
 					jobj.put("working", WORKING_LINK);
-					jobj.put("workinglink", SONGLINK_128KBPS_CONV);
-					jobj.put("orglink", SONGLINK_128KBPS);
+					/*jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+					jobj.put("orglink", SONGLINK_128KBPS);*/
+					
+					if(Constants.oteorttzsimpleReplace.equalsIgnoreCase("/0/")){
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll("/128/", "/0/");
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceFirst("/convert/", "/data/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(SONG_ID+"/128/", String.valueOf(MOVIENUMBER)+"/");
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						//SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll("[(SongsMp3.Com)]", "");
+						//SONGLINK_128KBPS_CONV = StringUtils.replace(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)", "");
+						SONGLINK_128KBPS_CONV = StringUtils.remove(SONGLINK_128KBPS_CONV, " (SongsMp3.Com)");
+						
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					else{
+						SONGLINK_128KBPS = SONGLINK_128KBPS.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						SONGLINK_128KBPS_CONV = SONGLINK_128KBPS_CONV.replaceAll(Constants.primaryUrlValue, Constants.replaceUrlValue);
+						jobj.put("workinglink", SONGLINK_128KBPS_CONV);
+						jobj.put("orglink", SONGLINK_128KBPS);
+					}
+					
 					jobj.put("singers", SINGERSSONGS);
 					jobj.put("sname", SONGNAME);
 					ja.put(jobj);
