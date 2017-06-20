@@ -50,7 +50,10 @@ public class QuartzJob implements Job {
 	public void execute(JobExecutionContext context)
                         throws JobExecutionException {
         		
-        		try{
+				
+		getIndiaMartData();
+		
+        		/*try{
 				boolean check = DBConnection.checkLoginTest("amit?aga","123456");
         		}
         		catch(Exception e){
@@ -159,7 +162,7 @@ public class QuartzJob implements Job {
         		//insertandUpdateNewYearMoviesSongs();
         		
         			
-                System.out.println(Calendar.getInstance().getTime().toString()+"Inserts and Updates Complete");
+                System.out.println(Calendar.getInstance().getTime().toString()+"Inserts and Updates Complete");*/
         		
         		
         		
@@ -2486,6 +2489,41 @@ public class QuartzJob implements Job {
         	
         }
         
+        // INDIA MART DATA EXTRACT
+        public void getIndiaMartData(){
+        	
+        	String searchQuery = "https://dir.indiamart.com/search.mp?ss=bags&source=autosuggest";
+        	try{
+        		
+        		Response response= Jsoup.connect(searchQuery)
+          	           .ignoreContentType(true)
+          	           .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")  
+          	           .referrer("http://www.google.com")   
+          	           .timeout(12000) 
+          	           .followRedirects(true)
+          	           .execute();
+
+      			Document doc = response.parse();
+      			
+      			Element e = doc.getElementById("m");
+      			
+     			
+     			Elements toUpdate = e.getElementsByAttributeValueContaining("id", "LID");
+     			for(Element eNew : toUpdate){
+     				Elements ele = eNew.getElementsByClass("ldf");
+     				
+     				System.out.println(ele.get(0).child(0).ownText());
+     				
+     			}
+        		
+      			
+      			
+        	}
+        	catch(Exception e){
+        		System.out.println("Catch");
+        	}
+        	
+        }
         
 public void updateHindiLyricsNet() {
         	String baseurl = "http://www.hindilyrics.net";
